@@ -81,6 +81,7 @@ class Car:
     def __init__(self, direction):
         self.direction = direction
         self.stopped = False
+        self.committed = False   # 🚦 new flag for cars inside intersection
 
         if direction == "N":
             self.x = WIDTH // 2 - 15
@@ -100,22 +101,30 @@ class Car:
 
         if self.direction == "N":
             stop_line = HEIGHT // 2 - 60
-            if self.can_pass() or (self.y + Car.HEIGHT < stop_line and self.safe_to_move(front_car)):
+            if not self.committed and self.can_pass() and self.y + Car.HEIGHT >= stop_line:
+                self.committed = True
+            if self.committed or (self.can_pass() and self.safe_to_move(front_car)) or (self.y + Car.HEIGHT < stop_line and self.safe_to_move(front_car)):
                 self.y += Car.SPEED
 
         elif self.direction == "S":
             stop_line = HEIGHT // 2 + 60
-            if self.can_pass() or (self.y > stop_line and self.safe_to_move(front_car)):
+            if not self.committed and self.can_pass() and self.y <= stop_line:
+                self.committed = True
+            if self.committed or (self.can_pass() and self.safe_to_move(front_car)) or (self.y > stop_line and self.safe_to_move(front_car)):
                 self.y -= Car.SPEED
 
         elif self.direction == "E":
             stop_line = WIDTH // 2 + 60
-            if self.can_pass() or (self.x > stop_line and self.safe_to_move(front_car)):
+            if not self.committed and self.can_pass() and self.x <= stop_line:
+                self.committed = True
+            if self.committed or (self.can_pass() and self.safe_to_move(front_car)) or (self.x > stop_line and self.safe_to_move(front_car)):
                 self.x -= Car.SPEED
 
         elif self.direction == "W":
             stop_line = WIDTH // 2 - 60
-            if self.can_pass() or (self.x + Car.HEIGHT < stop_line and self.safe_to_move(front_car)):
+            if not self.committed and self.can_pass() and self.x + Car.HEIGHT >= stop_line:
+                self.committed = True
+            if self.committed or (self.can_pass() and self.safe_to_move(front_car)) or (self.x + Car.HEIGHT < stop_line and self.safe_to_move(front_car)):
                 self.x += Car.SPEED
 
     def safe_to_move(self, front_car):
@@ -170,6 +179,7 @@ def spawn_car():
         ) for c in cars):
             cars.append(Car(direction))
 
+# Main loop
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
